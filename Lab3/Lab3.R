@@ -1,88 +1,92 @@
 setwd("C:/Users/Kurdicks/Desktop/r yazik/Excel")
-########ЛАБА3#############
+
+library(readxl)
+
+dataset <- read_excel("datasetmen.xls", sheet = "DataSet")
+datasetwoman <- read_excel("datasetmen.xls", sheet = "WomanDS")
+datasetman <- read_excel("datasetmen.xls", sheet = "ManDS")
 
 years <- seq(from = 1984, to = 2024, by = 4)
-y1984 <- c(0,0,1, 1, 2, 0, 2, 1)
-y1988 <- c(0,0,1, 0, 1, 0 ,1, 2)
-y1992 <- c(1,1,2,1,4,1,0,2)
-y1996 <- c(1,2,1,1,1,1,0,1)
-y2000 <- c(1,0,0,0,0,0,1,1)
-y2004 <- c(2,0,0,1,0,2,1,3)
-y2008 <- c(0,0,2,4,1,0,2,1)
-y2012 <- c(1,3,3,3,2,3,0,0)
-y2016 <- c(2,2,2,3,4,1,2,1)
-y2020 <- c(2,2,1,1,3,2,3,3)
-y2024 <- c(1,1,2,0,1,0,3,1)
 
-dataset <- matrix(rbind(y1984,y1988,y1992,y1996,y2000,y2004,y2008,y2012,y2016,y2020,y2024), nrow = length(years), ncol = 8)
-write.csv(dataset, file = "dataset.csv", row.names=TRUE, col.names = TRUE)
-rownames(dataset) <- years
-colnames(dataset) <- seq(1, 8)
+menMedals <- rowSums(datasetman[, 2:4])
+womenMedals <- rowSums(datasetwoman[, 2:4])
 
-y1984w <- c(0,0,0,0,1,0,1,0)
-y1988w <- c(0,0,1,0,1,0,1,2)
-y1992w <- c(1,1,2,1,3,1,0,0)
-y1996w <- c(1,2,1,1,1,1,0,1)
-y2000w <- c(1,0,0,0,0,0,1,1)
-y2004w <- c(1,0,0,0,0,1,1,3)
-y2008w <- c(0,0,2,3,1,0,1,1)
-y2012w <- c(0,2,2,2,2,2,0,0)
-y2016w <- c(1,1,1,1,2,0,2,1)
-y2020w <- c(2,1,1,0,3,1,1,1)
-y2024w <- c(1,1,2,0,1,0,0,0)
+if (!is.numeric(years) || !is.numeric(menMedals) || !is.numeric(womenMedals)) {
+  years <- as.numeric(years)
+  menMedals <- as.numeric(menMedals)
+  womenMedals <- as.numeric(womenMedals)
+}
 
+if (any(is.na(years)) || any(is.na(menMedals)) || any(is.na(womenMedals))) {
+  warning("Данные содержат NA. Удаляем строки с NA.")
+  valid <- !is.na(years) & !is.na(menMedals) & !is.na(womenMedals)
+  years <- years[valid]
+  menMedals <- menMedals[valid]
+  womenMedals <- womenMedals[valid]
+}
 
-datasetwomen <- matrix(rbind(y1984w,y1988w,y1992w,y1996w,y2000w,y2004w,y2008w,y2012w,y2016w,y2020w,y2024w), nrow = length(years), ncol = 8)
-write.csv(datasetwomen, file="datasetwomen.csv", row.names = TRUE)
+if (length(years) == 0 || length(menMedals) == 0 || length(womenMedals) == 0) {
+  stop("Ошибка: данные пусты после очистки")
+}
 
-rownames(datasetwomen) <- years
-colnames(datasetwomen) <- seq(1, 8)
+plot(years, menMedals, type = "n", main = "Тенденции изменения количества призовых мест\n(мужчины и женщины)",
+     xlab = "Год", ylab = "Кол-во призовых мест", xaxt = "n", 
+     ylim = c(0, max(c(menMedals, womenMedals), na.rm = TRUE)))
 
-y1984m <- y1984 - y1984w
-y1988m <- y1988 - y1988w
-y1992m <- y1992 - y1992w
-y1996m <- y1996 - y1996w
-y2000m <- y2000 - y2000w
-y2004m <- y2004 - y2004w
-y2008m <- y2008 - y2008w 
-y2012m <- y2012 - y2012w 
-y2016m <- y2016 - y2016w
-y2020m <- y2020 - y2020w 
-y2024m <- y2024 - y2024w 
-
-
-datasetmen <- matrix(rbind(y1984m,y1988m,y1992m,y1996m,y2000m,y2004m,y2008m,y2012m,y2016m,y2020m,y2024m), nrow = length(years), ncol = 8)
-write.csv(datasetmen, file = "datasetmen.csv", row.names = TRUE)
-rownames(datasetmen) <- years
-colnames(datasetmen) <- seq(1, 8)
-menMedals = rowSums(datasetmen[, 1:3])
-
-plot(years, menMedals, type="n", main="Тенденции изменения количества призовых мест \n по мужчинам",
-     xlab = "Год", ylab = "Кол-во призовых мест", xaxt = "n")
 axis(1, at = years, labels = years, las = 2)
+
 lines(years, menMedals, type = "b", col = "blue", pch = 16, lwd = 2)
+lines(years, womenMedals, type = "b", col = "red", pch = 17, lwd = 2)
 
-womenMedals = rowSums(datasetwomen[, 1:3])
-plot(years, womenMedals, type="n", main="Тенденции изменения количества призовых мест \n по женщинам",
-     xlab = "Год", ylab = "Кол-во призовых мест", xaxt = "n")
-axis(1, at = years, labels = years, las = 2, )
-lines(years, womenMedals, type = "b", col = "blue", pch = 16, lwd = 2)
+legend("topleft", legend = c("Мужчины", "Женщины"), col = c("blue", "red"), 
+       pch = c(16, 17), lwd = 2, bty = "n")
 
-barplot(t(dataset), 
-        beside = TRUE,
-        names.arg = years,
-        col = c("gold", "lightgrey", "orange", "grey", "grey", "grey", "grey", "grey"),
-        main = "Динамика достижений Китая \n на олимпийских играх по легкой \n атлетике по годам",  # Заголовок
+if (nrow(dataset) != length(years)) {
+  warning(paste("Количество строк в dataset (", nrow(dataset), ") не соответствует количеству лет (", length(years), "). Обрезаем годы."))
+  years <- years[1:nrow(dataset)] 
+}
+
+if (ncol(dataset) > 1) {
+  category_data <- as.matrix(dataset[, -1])  
+} else {
+  category_data <- as.matrix(dataset)
+}
+
+if (ncol(category_data) > 8) {
+  category_data <- category_data[, 1:8] 
+} else if (ncol(category_data) < 1) {
+  stop("Нет данных по категориям")
+}
+
+category_data <- t(category_data)
+
+colors <- c("gold", "lightgrey", "orange", "grey80", "grey70", "grey60", "grey50", "grey40")[1:nrow(category_data)]
+
+barplot(category_data, 
+        beside = TRUE,           
+        names.arg = years,        
+        col = colors,             
+        main = "Динамика достижений Китая\nна олимпийских играх по легкой атлетике по годам",
         xlab = "Год",
         ylab = "Места",
-        las = 2,
-        legend = colnames(dataset),
-        args.legend = list(x = "topleft", bty = "n")
-)
-GOLD <- dataset[, 1]
-years_and_gold <- paste(years, " (", GOLD, ")", sep = "")
-pie(GOLD, labels = years_and_gold, main = "Распределение первых мест по годам", width = 4, height = 5)
+        las = 2,                 
+        legend.text = paste(1:nrow(category_data), "-е место"), 
+        args.legend = list(x = "topleft", bty = "n", cex = 0.8)) 
+GOLD <- dataset[, 2]
+years <- dataset[, 1]
 
+positive_idx <- GOLD > 0
+GOLD_positive <- GOLD[positive_idx]
+years_positive <- years[positive_idx]
+
+colors <- rainbow(length(GOLD_positive))
+pie(GOLD_positive,  
+    labels = GOLD_positive,
+    main = "Распределение первых мест по годам", 
+    col = colors)
+legend("topright", 
+       legend = paste(years_positive, "(", GOLD_positive, ")", sep = ""), 
+       fill = colors)
 
 last6 <- c(2004, 2008, 2012, 2016, 2020, 2024)
 
